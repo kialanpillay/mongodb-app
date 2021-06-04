@@ -45,7 +45,7 @@ db.laureate.count()
 ```
 - - - -
 ### Example Operations
-1. Number of Nobel Laureates in the Field of Medicine
+1. Count of Nobel Laureates in the Field of Medicine
 ```
 db.prize.aggregate([ 
         { $match : {category : "medicine"} }, 
@@ -131,4 +131,8 @@ db.laureate.aggregate([
 db.laureate.update(
     { firstname : "Chen Ning", surname : "Yang" },
     { $set: { died : "2021-06-04", diedCountry : "South Africa", diedCountryCode : "ZA", diedCity : "Cape Town" } } )
+```
+3. Count of South African Nobel Laureates
+```
+db.laureate.find( { bornCountry : "South Africa" } ).count()
 ```
