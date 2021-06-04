@@ -126,3 +126,9 @@ db.laureate.aggregate([
     }
 ])
 ```
+2. Update Laureate Death Data
+```
+db.laureate.update(
+    { firstname : "Chen Ning", surname : "Yang" },
+    { $set: { died : "2021-06-04", diedCountry : "South Africa", diedCountryCode : "ZA", diedCity : "Cape Town" } } )
+```
