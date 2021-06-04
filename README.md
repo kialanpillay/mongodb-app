@@ -95,3 +95,34 @@ db.prize.aggregate( [
     { $sortByCount: "$laureates.bornCountry" } 
 ])
 ```
+- - - -
+### Operations
+#### Insaaf
+1. Percentage of Male and Female Nobel Laureates
+```
+db.laureate.aggregate([
+    {
+        $group: {
+            _id: null,
+            male: { $sum: { $cond: [ { $eq: [ "$gender", "male" ] }, 1, 0 ] } },
+            female: { $sum: { $cond: [ { $eq: [ "$gender", "female" ] }, 1, 0 ] } },
+            total: { $sum: 1 },
+        }
+    },
+    {
+        $project: {
+            percentMale: {
+                $multiply: [
+                    100, { $divide: [ "$male", "$total" ] }
+                ]
+            },
+            percentFemale: {
+                $multiply: [
+                    100, { $divide: [ "$female", "$total" ] }
+                ]
+            }
+
+        }
+    }
+])
+```
