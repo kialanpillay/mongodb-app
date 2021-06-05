@@ -1,59 +1,82 @@
 # Big Data Management & Analysis
+
 ## Assignment 1: MongoDB
 
 ### Introduction
-IntelliJ is the recommended IDE for development. Clone the sources and open it as a project in the IDE. 
-Gradle is used for dependency management and will automatically download the requisite libraries. 
 
-Note that the `mongod` process must be running in order for this application to connect with your local instance of the database. 
+IntelliJ is the recommended IDE for development. Clone the sources and open it as a project in the IDE.
+Gradle is used for dependency management and will automatically download the requisite libraries.
 
-- - - -
+Note that the `mongod` process must be running in order for this application to connect with your local instance of the database.
+
+---
+
 ### Installation
+
 Start the server and shell using the following commands.
+
 ```
 brew services start mongodb-community@4.4
 mongo
 ```
+
 #### Database Creation
+
 Once in the shell, run the following set of commands to create the database and collections.
+
 ```
 use nobel
 db.createCollection('prize')
 db.createCollection('laureate')
 ```
+
 Use these commands to test that the operations have succeeded.
+
 ```
 show dbs
 show collections
 ```
+
 #### Data Loading
+
 Run the following set of commands to execute the JavaScript scripts to insert the documents.
 These scripts are available in the `scripts` directory.
+
 ```
 load("/absolute/path/to/insert_prize_documents.js")
 load("/absolute/path/to/insert_laureate_documents.js")
 ```
-Alternatively, you can use the `db.collection.insertMany()` operation. This approach is not recommended. 
+
+Alternatively, you can use the `db.collection.insertMany()` operation. This approach is not recommended.
+
 ```
 db.prize.insertMany([...])
 db.laureate.insertMany([...])
 ```
+
 Use these commands to test that the insert operations have succeeded.
+
 ```
 db.prize.count()
 db.laureate.count()
 ```
-- - - -
+
+---
+
 ### Example Operations
+
 1. Count of Nobel Laureates in the Field of Medicine
+
 ```
-db.prize.aggregate([ 
-        { $match : {category : "medicine"} }, 
-        { $unwind: "$laureates" }, 
+db.prize.aggregate([
+        { $match : {category : "medicine"} },
+        { $unwind: "$laureates" },
         { $group : { _id : null, count: { $sum : 1} } }
 ])
 ```
+
 2. Percentage of Alive and Dead Nobel Laureates
+
 ```
 db.laureate.aggregate([
     {
@@ -81,24 +104,33 @@ db.laureate.aggregate([
     }
 ])
 ```
+
 3. Full Names and Country of Birth of Multiple Laureates
+
 ```
-db.laureate.find( 
-    { "prizes.1": { $exists: true } }, 
-    { firstname: 1, surname: 1, bornCountry: 1, _id: 0 } 
+db.laureate.find(
+    { "prizes.1": { $exists: true } },
+    { firstname: 1, surname: 1, bornCountry: 1, _id: 0 }
 ).pretty()
 ```
+
 4. Ranking of Nobel Laureates by Country of Birth
+
 ```
-db.prize.aggregate( [ 
-    { $unwind : "$laureates" }, 
-    { $sortByCount: "$laureates.bornCountry" } 
+db.prize.aggregate( [
+    { $unwind : "$laureates" },
+    { $sortByCount: "$laureates.bornCountry" }
 ])
 ```
-- - - -
+
+---
+
 ### Operations
+
 #### Insaaf
+
 1. Percentage of Male and Female Nobel Laureates
+
 ```
 db.laureate.aggregate([
     {
@@ -126,13 +158,47 @@ db.laureate.aggregate([
     }
 ])
 ```
+
 2. Update Laureate Death Data
+
 ```
 db.laureate.update(
     { firstname : "Chen Ning", surname : "Yang" },
     { $set: { died : "2021-06-04", diedCountry : "South Africa", diedCountryCode : "ZA", diedCity : "Cape Town" } } )
 ```
+
 3. Count of South African Nobel Laureates
+
 ```
 db.laureate.find( { bornCountry : "South Africa" } ).count()
+```
+
+4. Average age of South African Laureates
+
+```
+db.laureate.aggregate([
+    { $match: { $and: [ { bornCountry : "South Africa" }, { died : "0000-00-00" } ] } },
+    {
+        $project: {
+            date: "$born",
+            laureateAge: { $divide: [ { $subtract: [ new Date(), { $toDate : "$born" }] }, (365*24*60*60*1000) ] }
+        }
+    },
+    {
+        $group: {
+            _id: null,
+            ages: { $sum: "$laureateAge" },
+            total: { $sum: 1 },
+        }
+    },
+    {
+        $project: {
+            averageAge: {
+                $divide: [
+                    "$ages", "$total"
+                ]
+            }
+        }
+    }
+])
 ```
