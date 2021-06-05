@@ -202,3 +202,81 @@ db.laureate.aggregate([
     }
 ])
 ```
+---
+
+### Operations
+
+#### Roscoe
+
+1. Creating a new laureate
+
+```
+db.laureate.insertOne( {
+      firstname: "Jack",
+      surname: "Sparrow",
+      born: "1963-06-09",
+      died: "0000-00-00",
+      bornCountry: "USA",
+      bornCountryCode: "US",
+      bornCity: "Owensboro",
+      gender: "male",
+      prizes: [
+        {
+          year: 2003,
+          category: "movies",
+          share: 1,
+          motivation:
+            '"This is the day you will always remember as the day you almost caught Captain Jack Sparrow."',
+        },
+      ],
+      affiliations: [
+        {
+          name: "Carribean University",
+          city: "Atlantis",
+          country: "United Carribean Seas",
+        },
+      ],
+    },)
+```
+
+2. Count number of Nobel Prizes awarded since 2015 (inclusive)
+
+```
+db.prize.find({year:{$gte:2015}}).count()
+```
+
+3. Count number of living Laureates worldwide
+
+```
+db.laureate.aggregate([{ $match: { died : "0000-00-00" }}, {$count:"laureates_alive"}])
+```
+
+4. Delete a laureate
+
+```
+db.laureate.aggregate([
+    { $match: { $and: [ { bornCountry : "South Africa" }, { died : "0000-00-00" } ] } },
+    {
+        $project: {
+            date: "$born",
+            laureateAge: { $divide: [ { $subtract: [ new Date(), { $toDate : "$born" }] }, (365*24*60*60*1000) ] }
+        }
+    },
+    {
+        $group: {
+            _id: null,
+            ages: { $sum: "$laureateAge" },
+            total: { $sum: 1 },
+        }
+    },
+    {
+        $project: {
+            averageAge: {
+                $divide: [
+                    "$ages", "$total"
+                ]
+            }
+        }
+    }
+])
+```
