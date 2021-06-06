@@ -173,7 +173,7 @@ db.laureate.update(
 db.laureate.find( { bornCountry : "South Africa" } ).count()
 ```
 
-4. Average age of South African Laureates
+4. Average Age of South African Laureates
 
 ```
 db.laureate.aggregate([
@@ -236,7 +236,7 @@ db.laureate.insertOne( {
           country: "United Carribean Seas",
         },
       ],
-    },)
+    })
 ```
 
 2. Count number of Nobel Prizes awarded since 2015 (inclusive)
@@ -248,37 +248,19 @@ db.prize.find({year:{$gte:2015}}).count()
 3. Count number of living Laureates worldwide
 
 ```
-db.laureate.aggregate([{ $match: { died : "0000-00-00" }}, {$count:"laureates_alive"}])
+db.laureate.aggregate( [
+    { $match: { died : "0000-00-00" } }, 
+    { $count:"laureates_alive" }
+] )
 ```
 
 4. Delete a laureate
 
 ```
-db.laureate.deleteOne( {
+db.laureate.deleteOne( 
+    {
       firstname: "Jack",
       surname: "Sparrow",
-      born: "1963-06-09",
-      died: "0000-00-00",
-      bornCountry: "USA",
-      bornCountryCode: "US",
-      bornCity: "Owensboro",
-      gender: "male",
-      prizes: [
-        {
-          year: 2003,
-          category: "movies",
-          share: 1,
-          motivation:
-            '"This is the day you will always remember as the day you almost caught Captain Jack Sparrow."',
-        },
-      ],
-      affiliations: [
-        {
-          name: "Carribean University",
-          city: "Atlantis",
-          country: "United Carribean Seas",
-        },
-      ],
-    },)
-
+    } 
+)
 ```
