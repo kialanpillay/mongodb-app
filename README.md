@@ -4,10 +4,11 @@
 
 ### Introduction
 
-IntelliJ is the recommended IDE for development. Clone the sources and open it as a project in the IDE.
-Gradle is used for dependency management and will automatically download the requisite libraries.
+IntelliJ is the recommended IDE for development. Clone the sources and open it as a project in the IDE. Gradle is used
+for dependency management and will automatically download the requisite libraries.
 
-Note that the `mongod` process must be running in order for this application to connect with your local instance of the database.
+Note that the `mongod` process must be running in order for this application to connect with your local instance of the
+database.
 
 ---
 
@@ -39,8 +40,8 @@ show collections
 
 #### Data Loading
 
-Run the following set of commands to execute the JavaScript scripts to insert the documents.
-These scripts are available in the `scripts` directory.
+Run the following set of commands to execute the JavaScript scripts to insert the documents. These scripts are available
+in the `scripts` directory.
 
 ```
 load("/absolute/path/to/insert_prize_documents.js")
@@ -201,6 +202,64 @@ db.laureate.aggregate([
         }
     }
 ])
+```
+
+---
+
+### Operations
+
+#### Soo
+
+1. Count of laureates who received prizes in chemistry or physics
+
+```
+db.prize.find(
+    { $or : [ {category:'physics'} , {category:'chemistry'} ] },
+    { "laureates.firstname" : 1, "laureates.surname" : 1, category : 1}
+).count()
+```   
+
+2. Log-odds of a laureate being South African
+```
+db.laureate.aggregate([
+    {
+        $group: {
+            _id: null,
+            sa: { $sum: { $cond: [ { $eq: [ "$bornCountry", "South Africa" ] }, 1, 0 ] } },
+            other: { $sum: { $cond: [ { $ne: [ "$bornCountry", "South Africa" ] }, 1, 0 ] } },
+            total: { $sum: 1 },
+        }
+    },
+    {
+        $project: {
+            log_odds : {
+                $ln : { $divide: [ "$sa", "$other" ] }
+            }
+        }
+    }
+])
+```   
+
+3. Organizations that were awarded Nobel Prizes
+```
+db.laureate.distinct(
+    "firstname",
+    { gender : "org" } 
+)
+```
+
+4. Laureates who won 2 or more prizes
+```
+db.laureate.find(
+    {
+        $expr: {
+            $gte:[ {$size : "$prizes"}, 2 ]
+        }
+    },
+    {
+        firstname : 1, surname : 1, count : {$size : "$prizes"}, _id : 0    
+    }
+)
 ```
 ---
 
