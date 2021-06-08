@@ -15,7 +15,7 @@ public class App {
         MongoCollection<Document> prize = database.getCollection("prize");
         MongoCollection<Document> laureate = database.getCollection("laureate");
         // Operations
-
+        //Kialan Query
         prize.aggregate(Arrays.asList(
                 Aggregates.match(Filters.eq("category", "medicine")),
                 Aggregates.unwind("$laureates"),
@@ -45,6 +45,17 @@ public class App {
                 count++;
             }
             System.out.println("Physics and Chemistry Nobel Prize Recipient Count: " + count);
+        }
+
+        //Roscoe Query
+        FindIterable<Document> iterable2 = laureate.find(Filters.eq("died", "0000-00-00"));
+        try (MongoCursor<Document> iteratorR = iterable2.iterator()) {
+            int count = 0;
+            while (iteratorR.hasNext()) {
+                iteratorR.next();
+                count += 1;
+            }
+            System.out.println("Living Laureate Count: " + count);
         }
     }
 }
