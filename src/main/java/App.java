@@ -33,5 +33,18 @@ public class App {
             System.out.println("South African Nobel Laureate Count: " + count);
         }
 
+        //Soo Query=
+        FindIterable<Document> iterable1 = prize.find(Filters.or(
+                Filters.eq("category", "chemistry"),
+                Filters.eq("category", "physics"))
+        );
+        try (MongoCursor<Document> cursor = iterable1.iterator()) {
+            int count = 0;
+            while (cursor.hasNext()) {
+                cursor.next();
+                count++;
+            }
+            System.out.println("Physics and Chemistry Nobel Prize Recipient Count: " + count);
+        }
     }
 }
